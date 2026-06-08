@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⚔️ Подземелье Теней</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --stone-darkest: #1a1510;
+  --stone-dark:    #241e16;
+  --stone-mid:     #2e2518;
+  --stone-warm:    #3d3020;
+  --stone-light:   #5c4a2a;
+  --sand-dim:      #7a6340;
+  --sand:          #a08455;
+  --sand-bright:   #c9a96e;
+  --gold:          #d4943a;
+  --gold-bright:   #f0b854;
+  --torch:         #e8722a;
+  --torch-glow:    #ff9944;
+  --hp-red:        #8b2020;
+  --hp-bright:     #c0392b;
+  --xp-purple:     #5a3a7a;
+  --xp-bright:     #8b5cf6;
+  --green-dim:     #2d5a2d;
+  --green:         #4a9a4a;
+  --text:          #d4c4a0;
+  --text-dim:      #8a7a5a;
+  --boss-color:    #8b1a1a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══ STONE BACKGROUND ═══ */
+body {
+  background-color: var(--stone-darkest);
+  background-image:
+    /* subtle stone cracks */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='none'/%3E%3Cpath d='M20 0 L18 30 L25 60 L15 100 L22 140 L18 200' stroke='%23ffffff04' stroke-width='1' fill='none'/%3E%3Cpath d='M80 0 L85 40 L78 80 L88 120 L82 160 L86 200' stroke='%23ffffff03' stroke-width='1' fill='none'/%3E%3Cpath d='M140 0 L135 50 L145 90 L138 130 L142 200' stroke='%23ffffff04' stroke-width='1' fill='none'/%3E%3Cpath d='M0 40 L50 38 L90 45 L130 40 L170 43 L200 40' stroke='%23ffffff03' stroke-width='1' fill='none'/%3E%3Cpath d='M0 100 L60 97 L100 103 L150 99 L200 102' stroke='%23ffffff03' stroke-width='1' fill='none'/%3E%3Cpath d='M0 160 L40 162 L90 158 L140 163 L200 160' stroke='%23ffffff02' stroke-width='1' fill='none'/%3E%3C/svg%3E"),
+    /* stone blocks grid */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect width='80' height='60' fill='none'/%3E%3Crect x='0' y='0' width='79' height='29' rx='0' fill='none' stroke='%23ffffff06' stroke-width='1'/%3E%3Crect x='0' y='30' width='39' height='29' rx='0' fill='none' stroke='%23ffffff05' stroke-width='1'/%3E%3Crect x='40' y='30' width='39' height='29' rx='0' fill='none' stroke='%23ffffff05' stroke-width='1'/%3E%3C/svg%3E");
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 8px 24px;
+  overflow-x: hidden;
+}
+
+/* ═══ TORCH FLICKER ═══ */
+@keyframes torchFlicker {
+  0%,100% { opacity:.9; text-shadow: 0 0 8px #e8722a, 0 0 20px #ff994466; }
+  25%      { opacity:1;  text-shadow: 0 0 14px #ffbb44, 0 0 30px #ff994488; }
+  50%      { opacity:.85;text-shadow: 0 0 6px #e8722a, 0 0 16px #ff994433; }
+  75%      { opacity:.95;text-shadow: 0 0 12px #ffaa33, 0 0 24px #ff994466; }
+}
+
+.torch { animation: torchFlicker 1.8s ease-in-out infinite; }
+
+/* ═══ HEADER ═══ */
+.header {
+  text-align: center;
+  margin: 6px 0 10px;
+}
+.header h1 {
+  font-size: 11px;
+  color: var(--gold-bright);
+  text-shadow: 0 0 16px var(--gold), 0 2px 0 #000;
+  letter-spacing: 2px;
+  line-height: 1.6;
+}
+.header .sub {
+  font-size: 6px;
+  color: var(--sand-dim);
+  margin-top: 4px;
+  letter-spacing: 3px;
+}
+
+/* ═══ WRAPPER ═══ */
+.wrap {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* ═══ TABS ═══ */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+.tab-btn {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  color: var(--text-dim);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  padding: 7px 2px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .15s;
+  line-height: 1.8;
+}
+.tab-btn .tab-icon { font-size: 13px; display: block; margin-bottom: 2px; }
+.tab-btn:hover { border-color: var(--sand); color: var(--text); }
+.tab-btn.active {
+  background: var(--stone-warm);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.tab-pane { display: none; }
+.tab-pane.active { display: flex; flex-direction: column; gap: 7px; }
+
+/* ═══ PANEL ═══ */
+.panel {
+  background: var(--stone-dark);
+  border: 2px solid var(--stone-warm);
+  padding: 10px;
+  position: relative;
+}
+/* inner shadow top edge = stone ledge feel */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffffff08, transparent);
+  pointer-events: none;
+}
+
+.panel-title {
+  font-size: 7px;
+  color: var(--gold);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--stone-warm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ═══ GOLD BAR ═══ */
+.gold-bar {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  border-top-color: var(--gold);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.gold-num {
+  font-size: 16px;
+  color: var(--gold-bright);
+  text-shadow: 0 0 12px var(--gold);
+}
+.gold-label { font-size: 5px; color: var(--text-dim); }
+
+/* ═══ BARS ═══ */
+.bar-row { margin-top: 6px; }
+.bar-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 5px;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+.bar-track {
+  height: 7px;
+  background: #0d0b08;
+  border: 1px solid var(--stone-warm);
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  transition: width .4s ease;
+  position: relative;
+}
+.bar-fill::after {
+  content:'';
+  position: absolute;
+  top:0; left:0; right:0;
+  height: 2px;
+  background: rgba(255,255,255,.2);
+}
+.hp-fill  { background: var(--hp-bright); box-shadow: 0 0 4px var(--hp-bright); }
+.xp-fill  { background: var(--xp-bright); box-shadow: 0 0 4px var(--xp-bright); }
+.boss-fill{ background: #8b1a1a; box-shadow: 0 0 8px #ff000044; }
+
+/* ═══ STATS ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.stat-box {
+  background: var(--stone-mid);
+  border: 1px solid var(--stone-warm);
+  padding: 6px 4px;
+  text-align: center;
+}
+.stat-lbl { font-size: 4px; color: var(--text-dim); margin-bottom: 3px; }
+.stat-val { font-size: 9px; color: var(--gold-bright); }
+
+/* ═══ ARENA ═══ */
+.arena {
+  position: relative;
+  background:
+    linear-gradient(180deg, #130f0a 0%, #1e1608 60%, #130f0a 100%);
+  border: 2px solid var(--stone-warm);
+  border-top-color: var(--stone-light);
+  overflow: hidden;
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px;
+}
+
+/* stone floor line */
+.arena::before {
+  content: '';
+  position: absolute;
+  bottom: 22px; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--stone-warm), transparent);
+}
+
+/* torch sconces on wall */
+.arena-torch-l, .arena-torch-r {
+  position: absolute;
+  top: 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+.arena-torch-l { left: 6px; }
+.arena-torch-r { right: 6px; }
+
+/* ambient torch glow */
+.arena::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60px 80px at 14px 30px, #e8722a18, transparent),
+    radial-gradient(ellipse 60px 80px at calc(100% - 14px) 30px, #e8722a18, transparent);
+  pointer-events: none;
+}
+
+.fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+.sprite {
+  font-size: 36px;
+  line-height: 1;
+  cursor: default;
+  user-select: none;
+  transition: transform .1s;
+  filter: drop-shadow(0 2px 4px #000);
+}
+
+/* BOSS glow */
+.sprite.boss-sprite {
+  filter: drop-shadow(0 0 12px #ff000066) drop-shadow(0 2px 4px #000);
+  animation: bossFloat 2s ease-in-out infinite;
+}
+@keyframes bossFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+.sprite.atk-anim  { animation: atkAnim .25s ease; }
+.sprite.hit-anim  { animation: hitAnim .3s ease; }
+@keyframes atkAnim {
+  0%   { transform: translateX(0) scale(1); }
+  40%  { transform: translateX(18px) scale(1.15); }
+  100% { transform: translateX(0) scale(1); }
+}
+@keyframes hitAnim {
+  0%   { transform: translateX(0); filter: brightness(1) drop-shadow(0 2px 4px #000); }
+  30%  { transform: translateX(-7px); filter: brightness(4) drop-shadow(0 0 8px red); }
+  70%  { transform: translateX(3px); }
+  100% { transform: translateX(0); filter: brightness(1) drop-shadow(0 2px 4px #000); }
+}
+
+.fighter-name {
+  font-size: 5px;
+  color: var(--text-dim);
+  max-width: 85px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fighter-name.boss-name { color: #ff6666; text-shadow: 0 0 6px #ff000066; }
+
+.fighter-bars { width: 85px; }
+
+.vs { font-size: 12px; color: var(--sand-dim); z-index:2; text-shadow: 0 0 8px var(--torch); }
+
+/* DAMAGE FLOAT */
+.dmg-float {
+  position: absolute;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 100;
+  animation: floatUp .9s ease forwards;
+  text-shadow: 0 1px 3px #000;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-44px) scale(1.4); opacity: 0; }
+}
+
+/* ═══ ATTACK BUTTON ═══ */
+.attack-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.atk-btn {
+  width: 100%;
+  background: linear-gradient(180deg, #3d1e10, #2a1408);
+  border: 3px solid var(--torch);
+  border-bottom-color: #7a2a0a;
+  color: var(--torch-glow);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .1s;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 0 10px var(--torch-glow);
+}
+.atk-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+  pointer-events: none;
+}
+.atk-btn:hover  { background: linear-gradient(180deg, #4d2a18, #381a0e); border-color: var(--torch-glow); }
+.atk-btn:active { transform: translateY(2px) scale(.98); border-bottom-color: var(--torch); }
+.atk-btn:disabled {
+  opacity: .35; cursor: not-allowed;
+  border-color: var(--stone-warm); color: var(--text-dim);
+  text-shadow: none;
+}
+
+.auto-info {
+  font-size: 5px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.8;
+}
+.auto-info .invited { color: var(--green); }
+
+/* ═══ BOSS WARNING ═══ */
+.boss-warning {
+  background: #1a0808;
+  border: 2px solid var(--boss-color);
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 7px;
+  color: #ff6666;
+  display: none;
+  animation: bossWarn 1s ease-in-out infinite;
+}
+.boss-warning.show { display: block; }
+@keyframes bossWarn {
+  0%,100% { border-color: #8b1a1a; }
+  50%      { border-color: #ff4444; box-shadow: 0 0 12px #ff000044; }
+}
+
+/* ═══ LOG ═══ */
+.battle-log {
+  background: #0a0806;
+  border: 1px solid var(--stone-warm);
+  height: 72px;
+  overflow-y: auto;
+  padding: 5px 7px;
+  font-size: 5px;
+  line-height: 2;
+}
+.battle-log::-webkit-scrollbar { width: 4px; }
+.battle-log::-webkit-scrollbar-track { background: var(--stone-mid); }
+.battle-log::-webkit-scrollbar-thumb { background: var(--sand-dim); }
+.log-hero   { color: var(--gold); }
+.log-enemy  { color: #c06060; }
+.log-system { color: var(--sand-bright); }
+.log-loot   { color: var(--xp-bright); }
+.log-boss   { color: #ff8888; }
+
+/* ═══ UPGRADES ═══ */
+.upg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.upg-btn {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  padding: 9px 6px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.8;
+  transition: all .12s;
+}
+.upg-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: #2e2010;
+  transform: translateY(-1px);
+}
+.upg-btn:active:not(:disabled) { transform: scale(.97); }
+.upg-btn:disabled { opacity: .3; cursor: not-allowed; }
+.upg-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+.upg-name { color: var(--gold); display: block; margin-bottom: 2px; font-size: 6px; }
+.upg-stat { color: var(--green); display: block; margin-bottom: 4px; }
+.upg-cost { color: var(--gold-bright); }
+
+/* ═══ FLOORS ═══ */
+.floor-item {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all .12s;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.floor-item:last-child { margin-bottom: 0; }
+.floor-item:hover:not(.locked) { border-color: var(--gold); background: #2e2010; }
+.floor-item.current { border-color: var(--torch); background: #2a1a08; }
+.floor-item.locked  { opacity: .4; cursor: not-allowed; }
+.floor-item.boss-floor { border-color: var(--boss-color); }
+.floor-item.boss-floor:hover:not(.locked) { border-color: #ff4444; }
+.fl-left { display: flex; align-items: center; gap: 8px; }
+.fl-icon { font-size: 18px; }
+.fl-name { color: var(--gold-bright); display: block; margin-bottom: 2px; font-size: 6px; }
+.fl-sub  { color: var(--text-dim); }
+.fl-badge {
+  font-size: 5px;
+  padding: 3px 5px;
+  border: 1px solid currentColor;
+}
+.badge-current { color: var(--torch); }
+.badge-locked  { color: var(--text-dim); }
+.badge-boss    { color: #ff6666; }
+
+/* ═══ LEADERBOARD ═══ */
+.lb-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 60px 45px;
+  gap: 4px;
+  align-items: center;
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--stone-warm);
+  font-size: 5px;
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-row.lb-header { color: var(--text-dim); font-size: 4px; background: var(--stone-mid); }
+.lb-row.me { background: #2e2010; border-left: 2px solid var(--gold); }
+.lb-rank { text-align: center; }
+.lb-rank .crown { font-size: 12px; }
+.lb-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-floor { color: var(--sand); text-align: right; }
+.lb-gold  { color: var(--gold-bright); text-align: right; }
+.lb-name-input {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 8px;
+  width: 100%;
+  margin-bottom: 6px;
+  outline: none;
+}
+.lb-name-input:focus { border-color: var(--gold); }
+.lb-save-btn {
+  background: var(--stone-mid);
+  border: 2px solid var(--gold);
+  color: var(--gold-bright);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: all .12s;
+}
+.lb-save-btn:hover { background: #2e2010; }
+
+/* ═══ REFERRAL ═══ */
+.ref-box {
+  background: var(--stone-mid);
+  border: 2px solid var(--stone-warm);
+  padding: 10px;
+  text-align: center;
+}
+.ref-counter {
+  font-size: 28px;
+  color: var(--gold-bright);
+  margin: 6px 0;
+  text-shadow: 0 0 12px var(--gold);
+}
+.ref-label { font-size: 5px; color: var(--text-dim); margin-bottom: 8px; }
+.ref-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.ref-dot {
+  width: 18px; height: 18px;
+  border: 2px solid var(--stone-warm);
+  background: var(--stone-darkest);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ref-dot.filled { background: #1a3a1a; border-color: var(--green); }
+.ref-link-btn {
+  background: #1a3a1a;
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 9px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 6px;
+  transition: all .12s;
+}
+.ref-link-btn:hover { background: #1e4a1e; }
+.ref-unlock-info {
+  font-size: 5px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.8;
+}
+
+/* ═══ DEATH OVERLAY ═══ */
+.dead-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000000d0;
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  font-family: 'Press Start 2P', monospace;
+}
+.dead-screen.show { display: flex; }
+.dead-title { font-size: 20px; color: #cc2222; text-shadow: 0 0 24px #cc2222; }
+.dead-sub   { font-size: 6px; color: var(--text-dim); text-align: center; line-height: 2; }
+.dead-btn {
+  background: #1a0808;
+  border: 2px solid #cc2222;
+  color: #ff6666;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+.dead-btn:hover { background: #2a0808; }
+
+/* ═══ LEVEL UP ═══ */
+.lvl-flash {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #d4943a22 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 150;
+  animation: lvlAnim .7s ease forwards;
+}
+@keyframes lvlAnim {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ═══ BOSS KILL FLASH ═══ */
+.boss-flash {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #8b1a1a44 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 150;
+  animation: bossKillAnim .8s ease forwards;
+}
+@keyframes bossKillAnim {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- torches flanking title -->
+<div class="header">
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:4px;">
+    <span class="torch" style="font-size:20px;">🔦</span>
+    <h1>ПОДЗЕМЕЛЬЕ<br>ТЕНЕЙ</h1>
+    <span class="torch" style="font-size:20px;">🔦</span>
+  </div>
+  <div class="sub">◈ PIXEL DUNGEON RPG ◈</div>
+</div>
+
+<div class="wrap">
+
+  <!-- GOLD -->
+  <div class="gold-bar">
+    <span style="font-size:16px;">💰</span>
+    <div>
+      <div class="gold-num" id="goldNum">0</div>
+      <div class="gold-label">ЗОЛОТО</div>
+    </div>
+    <span style="font-size:16px;">💰</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab('battle')">
+      <span class="tab-icon">⚔️</span>БОЙ
+    </button>
+    <button class="tab-btn" onclick="openTab('hero')">
+      <span class="tab-icon">🧙</span>ГЕРОЙ
+    </button>
+    <button class="tab-btn" onclick="openTab('dungeon')">
+      <span class="tab-icon">🗺️</span>КАРТА
+    </button>
+    <button class="tab-btn" onclick="openTab('leaders')">
+      <span class="tab-icon">🏆</span>ТОП
+    </button>
+  </div>
+
+  <!-- ══════ TAB: BATTLE ══════ -->
+  <div class="tab-pane active" id="tab-battle">
+
+    <!-- Boss warning -->
+    <div class="boss-warning" id="bossWarn">
+      ☠ ПРИБЛИЖАЕТСЯ БОСС ☠
+    </div>
+
+    <!-- Arena -->
+    <div class="panel" style="padding:0;">
+      <div class="arena" id="arena">
+        <span class="arena-torch-l torch">🕯️</span>
+        <span class="arena-torch-r torch">🕯️</span>
+
+        <!-- Hero -->
+        <div class="fighter">
+          <div class="sprite" id="heroSprite">🧙</div>
+          <div class="fighter-bars">
+            <div class="bar-label-row"><span>HP</span><span id="arenaHp">100</span></div>
+            <div class="bar-track"><div class="bar-fill hp-fill" id="arenaHpFill" style="width:100%"></div></div>
+          </div>
+          <div class="fighter-name">Герой</div>
+        </div>
+
+        <div class="vs">VS</div>
+
+        <!-- Enemy -->
+        <div class="fighter">
+          <div class="sprite" id="enemySprite">👹</div>
+          <div class="fighter-bars">
+            <div class="bar-label-row"><span>HP</span><span id="arenaEnemyHp">30</span></div>
+            <div class="bar-track"><div class="bar-fill hp-fill" id="arenaEnemyFill" style="width:100%"></div></div>
+          </div>
+          <div class="fighter-name" id="enemyNameArena">Гоблин</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attack button -->
+    <div class="attack-wrap">
+      <button class="atk-btn" id="atkBtn" onclick="heroAttack()">
+        ⚔️ АТАКОВАТЬ
+      </button>
+      <div class="auto-info" id="autoInfo">
+        🔒 Автоатака: пригласи <span class="invited" id="invitedCount">0</span>/3 друзей
+      </div>
+    </div>
+
+    <!-- Battle log -->
+    <div class="panel">
+      <div class="panel-title">📜 Летопись боя</div>
+      <div class="battle-log" id="battleLog"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════ TAB: HERO ══════ -->
+  <div class="tab-pane" id="tab-hero">
+
+    <div class="panel">
+      <div class="panel-title">🧙 Характеристики</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-lbl">УРОВЕНЬ</div><div class="stat-val" id="statLvl">1</div></div>
+        <div class="stat-box"><div class="stat-lbl">АТАКА</div><div class="stat-val" id="statAtk">5</div></div>
+        <div class="stat-box"><div class="stat-lbl">ЗАЩИТА</div><div class="stat-val" id="statDef">2</div></div>
+        <div class="stat-box"><div class="stat-lbl">МАКС HP</div><div class="stat-val" id="statHp">100</div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-row"><span>HP</span><span id="hpText">100/100</span></div>
+        <div class="bar-track"><div class="bar-fill hp-fill" id="hpFill" style="width:100%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-row"><span>XP</span><span id="xpText">0/100</span></div>
+        <div class="bar-track"><div class="bar-fill xp-fill" id="xpFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🔨 Улучшения</div>
+      <div class="upg-grid">
+        <button class="upg-btn" id="upgAtk" onclick="upgrade('atk')">
+          <span class="upg-icon">⚔️</span>
+          <span class="upg-name">АТАКА</span>
+          <span class="upg-stat" id="upgAtkStat">+2 урона</span>
+          <span class="upg-cost" id="upgAtkCost">💰 50</span>
+        </button>
+        <button class="upg-btn" id="upgDef" onclick="upgrade('def')">
+          <span class="upg-icon">🛡️</span>
+          <span class="upg-name">ЗАЩИТА</span>
+          <span class="upg-stat" id="upgDefStat">+1 броня</span>
+          <span class="upg-cost" id="upgDefCost">💰 40</span>
+        </button>
+        <button class="upg-btn" id="upgHp" onclick="upgrade('hp')">
+          <span class="upg-icon">❤️</span>
+          <span class="upg-name">ЗДОРОВЬЕ</span>
+          <span class="upg-stat" id="upgHpStat">+25 HP</span>
+          <span class="upg-cost" id="upgHpCost">💰 35</span>
+        </button>
+        <button class="upg-btn" id="upgCrit" onclick="upgrade('crit')">
+          <span class="upg-icon">💥</span>
+          <span class="upg-name">КРИТ</span>
+          <span class="upg-stat" id="upgCritStat">+5% шанс</span>
+          <span class="upg-cost" id="upgCritCost">💰 70</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════ TAB: DUNGEON MAP ══════ -->
+  <div class="tab-pane" id="tab-dungeon">
+    <div class="panel">
+      <div class="panel-title">🗺️ Этажи подземелья</div>
+      <div id="floorList"></div>
+    </div>
+
+    <!-- Referral -->
+    <div class="panel">
+      <div class="panel-title">👥 Позвать друзей</div>
+      <div class="ref-box">
+        <div class="ref-label">Приглашено друзей</div>
+        <div class="ref-counter" id="refCount">0</div>
+        <div class="ref-progress" id="refDots">
+          <div class="ref-dot" id="rd0">👤</div>
+          <div class="ref-dot" id="rd1">👤</div>
+          <div class="ref-dot" id="rd2">👤</div>
+        </div>
+        <button class="ref-link-btn" onclick="addFriend()">
+          📨 ПРИГЛАСИТЬ ДРУГА (+1)
+        </button>
+        <div class="ref-unlock-info">
+          Автоатака разблокируется при 3 друзьях.<br>
+          Герой будет сражаться пока ты offline!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: LEADERBOARD ══════ -->
+  <div class="tab-pane" id="tab-leaders">
+    <div class="panel">
+      <div class="panel-title">🏆 Таблица героев</div>
+      <input class="lb-name-input" id="playerNameInput" placeholder="ВАШ НИК..." maxlength="12">
+      <button class="lb-save-btn" onclick="saveName()">💾 СОХРАНИТЬ НИК</button>
+    </div>
+    <div class="panel">
+      <div class="lb-row lb-header">
+        <div class="lb-rank">#</div>
+        <div class="lb-name">ГЕРОЙ</div>
+        <div class="lb-floor">ЭТАЖ</div>
+        <div class="lb-gold">ЗОЛОТО</div>
+      </div>
+      <div id="lbRows"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- Overlays -->
+<div class="dead-screen" id="deadScreen">
+  <div class="dead-title">💀 ТЫ ПОГИБ</div>
+  <div class="dead-sub">Враг оказался сильнее...<br>Золото сохранено.<br>Продолжай биться, герой!</div>
+  <button class="dead-btn" onclick="respawn()">▶ ВОЗРОДИТЬСЯ</button>
+</div>
+
+<div class="lvl-flash"  id="lvlFlash"></div>
+<div class="boss-flash" id="bossFlash"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+const FLOORS = [
+  {
+    id: 0, name: "Вход в пещеру", icon: "🪨",
+    minPower: 0, goldMod: 1,
+    enemies: [
+      { name:"Гоблин",   sprite:"👹", hp:28,  atk:3,  def:0, xp:12, gold:[4,10]  },
+      { name:"Крыса",    sprite:"🐀", hp:18,  atk:2,  def:0, xp:8,  gold:[3,7]   },
+    ],
+    boss: { name:"КОРОЛЬ ГОБЛИНОВ", sprite:"👑", hp:120, atk:8, def:2, xp:80, gold:[40,70], isBoss:true }
+  },
+  {
+    id: 1, name: "Тёмный тоннель", icon: "🌑",
+    minPower: 9, goldMod: 1.6,
+    enemies: [
+      { name:"Скелет",    sprite:"💀", hp:50,  atk:6,  def:1, xp:24, gold:[9,18]  },
+      { name:"Летучая мышь", sprite:"🦇", hp:38, atk:5, def:0, xp:18, gold:[7,14] },
+    ],
+    boss: { name:"ПОВЕЛИТЕЛЬ ТЬМЫ", sprite:"🌑", hp:220, atk:14, def:4, xp:160, gold:[80,130], isBoss:true }
+  },
+  {
+    id: 2, name: "Логово троллей", icon: "👺",
+    minPower: 17, goldMod: 2.2,
+    enemies: [
+      { name:"Тролль",   sprite:"👺", hp:85,  atk:10, def:3, xp:48, gold:[18,36] },
+      { name:"Орк",      sprite:"👿", hp:65,  atk:8,  def:2, xp:38, gold:[14,28] },
+    ],
+    boss: { name:"ГОРНЫЙ ВЕЛИКАН", sprite:"🗿", hp:380, atk:22, def:7, xp:300, gold:[150,250], isBoss:true }
+  },
+  {
+    id: 3, name: "Тронный зал", icon: "👑",
+    minPower: 28, goldMod: 3.2,
+    enemies: [
+      { name:"Демон",    sprite:"😈", hp:140, atk:15, def:5, xp:95,  gold:[46,90] },
+      { name:"Страж",    sprite:"⚔️", hp:110, atk:12, def:6, xp:80,  gold:[38,75] },
+    ],
+    boss: { name:"АРХИДЕМОН ЗАРАТ", sprite:"🐉", hp:700, atk:38, def:12, xp:600, gold:[350,600], isBoss:true }
+  },
+];
+
+// Static leaderboard seed
+const SEED_LB = [
+  { name:"ДракоСлай",  floor:3, gold:12400 },
+  { name:"Арагорн_88", floor:3, gold:9870  },
+  { name:"TerrorMage", floor:2, gold:7650  },
+  { name:"ПодзСтарец", floor:2, gold:5200  },
+  { name:"Кузьмич",    floor:1, gold:3100  },
+];
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let G = {
+  gold: 0,
+  hero: { level:1, hp:100, maxHp:100, atk:5, def:2, xp:0, xpNeeded:100, crit:5 },
+  floor: 0,
+  killCount: 0,   // kills since last boss (boss every 10 kills)
+  upgrades: { atk:0, def:0, hp:0, crit:0 },
+  enemy: null,
+  enemyHp: 0,
+  dead: false,
+  invited: 0,     // friends invited (enables auto-attack at 3)
+  playerName: "ГЕРОЙ",
+  lastSeen: null,
+  autoTick: 0,
+};
+
+const BOSS_EVERY = 10; // kills before boss
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+function init() {
+  loadState();
+  renderFloors();
+  renderLeaderboard();
+  spawnEnemy();
+  updateUI();
+  addLog("🕯️ Ты вошёл в Подземелье Теней...", "log-system");
+  // auto-attack interval
+  setInterval(autoTick, 1200);
+}
+
+// ══════════════════════════════════════════
+//  SPAWN
+// ══════════════════════════════════════════
+function spawnEnemy() {
+  const fl = FLOORS[G.floor];
+  const isBoss = (G.killCount > 0 && G.killCount % BOSS_EVERY === 0);
+  const scale = 1 + (G.hero.level - 1) * 0.12;
+
+  let tmpl;
+  if (isBoss) {
+    tmpl = { ...fl.boss };
+    document.getElementById('bossWarn').classList.add('show');
+  } else {
+    tmpl = { ...fl.enemies[Math.floor(Math.random() * fl.enemies.length)] };
+    document.getElementById('bossWarn').classList.remove('show');
+  }
+
+  G.enemy = {
+    ...tmpl,
+    hp:    Math.floor(tmpl.hp * scale),
+    atk:   Math.floor(tmpl.atk * scale),
+    def:   Math.floor(tmpl.def * scale),
+    maxHp: Math.floor(tmpl.hp * scale),
+    goldRange: [
+      Math.floor((tmpl.gold[0]) * fl.goldMod),
+      Math.floor((tmpl.gold[1]) * fl.goldMod),
+    ],
+    isBoss: !!tmpl.isBoss,
+  };
+  G.enemyHp = G.enemy.hp;
+
+  document.getElementById('enemySprite').textContent    = G.enemy.sprite;
+  document.getElementById('enemySprite').className      = 'sprite' + (G.enemy.isBoss ? ' boss-sprite' : '');
+  document.getElementById('enemyNameArena').textContent = G.enemy.name;
+  document.getElementById('enemyNameArena').className   = 'fighter-name' + (G.enemy.isBoss ? ' boss-name' : '');
+
+  if (G.enemy.isBoss) addLog(`☠️ БОСС ПОЯВИЛСЯ: ${G.enemy.name}!`, "log-boss");
+}
+
+// ══════════════════════════════════════════
+//  HERO ATTACK (manual)
+// ══════════════════════════════════════════
+function heroAttack() {
+  if (G.dead) return;
+  doHeroAttack();
+  // enemy retaliates
+  if (G.enemyHp > 0) doEnemyAttack();
+  updateUI();
+  save();
+}
+
+function doHeroAttack() {
+  const isCrit = Math.random() * 100 < G.hero.crit;
+  let dmg = Math.max(1, G.hero.atk - G.enemy.def + Math.floor(Math.random() * 4));
+  if (isCrit) { dmg = Math.floor(dmg * 1.8); }
+  G.enemyHp -= dmg;
+
+  anim('heroSprite',  'atk-anim');
+  anim('enemySprite', 'hit-anim');
+  showFloat(false, dmg, isCrit ? '🌟' : '');
+  addLog(`⚔️ Удар по ${G.enemy.name}: ${dmg}${isCrit?' 💥 КРИТ!':''}`, "log-hero");
+
+  if (G.enemyHp <= 0) { onKill(); }
+}
+
+function doEnemyAttack() {
+  if (G.enemyHp <= 0) return;
+  const dmg = Math.max(1, G.enemy.atk - G.hero.def + Math.floor(Math.random() * 3));
+  G.hero.hp -= dmg;
+  anim('enemySprite', 'atk-anim');
+  anim('heroSprite',  'hit-anim');
+  showFloat(true, dmg, '');
+  addLog(`💥 ${G.enemy.name} бьёт тебя: ${dmg}`, "log-enemy");
+
+  if (G.hero.hp <= 0) { onDeath(); }
+}
+
+// ══════════════════════════════════════════
+//  AUTO ATTACK (3 friends)
+// ══════════════════════════════════════════
+function autoTick() {
+  if (G.dead) return;
+  if (G.invited < 3) {
+    // slow regen even without auto
+    G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + 1);
+    updateUI();
+    return;
+  }
+  G.autoTick++;
+  doHeroAttack();
+  if (G.enemyHp > 0 && G.autoTick % 2 === 0) doEnemyAttack();
+  updateUI();
+  save();
+}
+
+// ══════════════════════════════════════════
+//  KILL / DEATH
+// ══════════════════════════════════════════
+function onKill() {
+  const gold = G.enemy.goldRange[0] + Math.floor(Math.random() * (G.enemy.goldRange[1] - G.enemy.goldRange[0]));
+  G.gold += gold;
+  gainXp(G.enemy.xp);
+  G.killCount++;
+
+  if (G.enemy.isBoss) {
+    addLog(`👑 БОСС ПОВЕРЖЕН! +${gold} золота!`, "log-boss");
+    flashBoss();
+    document.getElementById('bossWarn').classList.remove('show');
+  } else {
+    addLog(`💰 ${G.enemy.name} убит! +${gold} золота`, "log-loot");
+  }
+
+  // Heal 15% after each kill
+  G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + Math.floor(G.hero.maxHp * 0.15));
+  spawnEnemy();
+  renderLeaderboard();
+}
+
+function onDeath() {
+  G.hero.hp = 0;
+  G.dead = true;
+  addLog(`💀 Ты погиб в бою...`, "log-enemy");
+  document.getElementById('deadScreen').classList.add('show');
+  updateUI();
+}
+
+function respawn() {
+  G.dead = false;
+  G.hero.hp = G.hero.maxHp;
+  G.floor = 0;
+  G.killCount = 0;
+  document.getElementById('deadScreen').classList.remove('show');
+  spawnEnemy();
+  renderFloors();
+  addLog("✨ Герой возродился у входа!", "log-system");
+  updateUI();
+}
+
+// ══════════════════════════════════════════
+//  XP / LEVEL
+// ══════════════════════════════════════════
+function gainXp(amt) {
+  G.hero.xp += amt;
+  while (G.hero.xp >= G.hero.xpNeeded) {
+    G.hero.xp -= G.hero.xpNeeded;
+    G.hero.level++;
+    G.hero.xpNeeded  = Math.floor(100 * Math.pow(1.45, G.hero.level - 1));
+    G.hero.atk      += 2;
+    G.hero.def      += 1;
+    G.hero.maxHp    += 20;
+    G.hero.hp        = G.hero.maxHp;
+    addLog(`🌟 УРОВЕНЬ ${G.hero.level}! Сила растёт!`, "log-system");
+    flashLvl();
+    renderFloors();
+  }
+}
+
+// ══════════════════════════════════════════
+//  UPGRADES
+// ══════════════════════════════════════════
+const UPG_PRICE = {
+  atk:  l => Math.floor(50  * Math.pow(1.55, l)),
+  def:  l => Math.floor(40  * Math.pow(1.55, l)),
+  hp:   l => Math.floor(35  * Math.pow(1.5,  l)),
+  crit: l => Math.floor(70  * Math.pow(1.6,  l)),
+};
+
+function upgrade(t) {
+  const cost = UPG_PRICE[t](G.upgrades[t]);
+  if (G.gold < cost) return;
+  G.gold -= cost;
+  G.upgrades[t]++;
+  const msgs = {
+    atk:  () => { G.hero.atk += 2;  addLog("⚔️ Атака +2!", "log-system"); },
+    def:  () => { G.hero.def += 1;  addLog("🛡️ Защита +1!", "log-system"); },
+    hp:   () => { G.hero.maxHp += 25; G.hero.hp = Math.min(G.hero.hp+25, G.hero.maxHp); addLog("❤️ HP +25!", "log-system"); },
+    crit: () => { G.hero.crit += 5; addLog(`💥 Крит ${G.hero.crit}%!`, "log-system"); },
+  };
+  msgs[t]();
+  updateUI();
+  renderFloors();
+  save();
+}
+
+// ══════════════════════════════════════════
+//  FLOORS
+// ══════════════════════════════════════════
+function heroPower() {
+  return G.hero.atk + G.hero.def + Math.floor(G.hero.level * 1.5);
+}
+
+function renderFloors() {
+  const power = heroPower();
+  const list  = document.getElementById('floorList');
+  list.innerHTML = '';
+  FLOORS.forEach((f, i) => {
+    const locked  = power < f.minPower;
+    const current = G.floor === i;
+    const div = document.createElement('div');
+    div.className = 'floor-item'
+      + (locked ? ' locked' : '')
+      + (current ? ' current' : '')
+      + (f.boss ? ' boss-floor' : '');
+    if (!locked) div.onclick = () => selectFloor(i);
+    div.innerHTML = `
+      <div class="fl-left">
+        <span class="fl-icon">${f.icon}</span>
+        <div>
+          <span class="fl-name">${f.name}</span>
+          <span class="fl-sub">💰 ${Math.floor(10*f.goldMod)}–${Math.floor(35*f.goldMod)} / босс каждые ${BOSS_EVERY} побед</span>
+        </div>
+      </div>
+      <span class="fl-badge ${locked?'badge-locked':current?'badge-current':'badge-boss'}">
+        ${locked ? '🔒 '+f.minPower+'+' : current ? '▶ ЗДЕСЬ' : '☠ БОССЫ'}
+      </span>`;
+    list.appendChild(div);
+  });
+}
+
+function selectFloor(i) {
+  G.floor = i;
+  G.killCount = 0;
+  spawnEnemy();
+  renderFloors();
+  addLog(`🗺️ Спуск на этаж: ${FLOORS[i].name}`, "log-system");
+  updateUI();
+  openTab('battle');
+}
+
+// ══════════════════════════════════════════
+//  REFERRAL
+// ══════════════════════════════════════════
+function addFriend() {
+  if (G.invited >= 3) return;
+  G.invited++;
+  updateRefUI();
+  save();
+  if (G.invited >= 3) {
+    addLog("👥 3 друга приглашены! Автоатака разблокирована!", "log-system");
+    updateUI();
+  }
+}
+
+function updateRefUI() {
+  document.getElementById('refCount').textContent = G.invited;
+  for (let i = 0; i < 3; i++) {
+    const d = document.getElementById('rd' + i);
+    if (i < G.invited) { d.textContent = '✅'; d.classList.add('filled'); }
+    else                { d.textContent = '👤'; d.classList.remove('filled'); }
+  }
+  const info = document.getElementById('autoInfo');
+  const ic   = document.getElementById('invitedCount');
+  ic.textContent = G.invited;
+  if (G.invited >= 3) {
+    info.innerHTML = '✅ <span style="color:var(--green)">Автоатака включена!</span>';
+  }
+}
+
+// ══════════════════════════════════════════
+//  LEADERBOARD
+// ══════════════════════════════════════════
+function renderLeaderboard() {
+  // merge seed + player
+  const player = { name: G.playerName, floor: G.floor, gold: G.gold, isMe: true };
+  const all = [...SEED_LB, player].sort((a,b) => b.gold - a.gold).slice(0, 8);
+  const medals = ['🥇','🥈','🥉'];
+  const rows = document.getElementById('lbRows');
+  rows.innerHTML = '';
+  all.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'lb-row' + (r.isMe ? ' me' : '');
+    div.innerHTML = `
+      <div class="lb-rank">${i < 3 ? '<span class="crown">'+medals[i]+'</span>' : (i+1)}</div>
+      <div class="lb-name">${r.isMe ? '▶ '+r.name : r.name}</div>
+      <div class="lb-floor">Этаж ${r.floor+1}</div>
+      <div class="lb-gold">${r.gold.toLocaleString()}</div>`;
+    rows.appendChild(div);
+  });
+}
+
+function saveName() {
+  const v = document.getElementById('playerNameInput').value.trim().toUpperCase();
+  if (v) { G.playerName = v; renderLeaderboard(); save(); }
+}
+
+// ══════════════════════════════════════════
+//  UI UPDATE
+// ══════════════════════════════════════════
+function updateUI() {
+  const h = G.hero;
+  document.getElementById('goldNum').textContent = G.gold.toLocaleString();
+
+  // hero stats
+  document.getElementById('statLvl').textContent = h.level;
+  document.getElementById('statAtk').textContent = h.atk;
+  document.getElementById('statDef').textContent = h.def;
+  document.getElementById('statHp').textContent  = h.maxHp;
+
+  const hpP = Math.max(0, h.hp / h.maxHp * 100);
+  document.getElementById('hpFill').style.width = hpP + '%';
+  document.getElementById('hpText').textContent = `${Math.max(0,h.hp)}/${h.maxHp}`;
+  document.getElementById('arenaHpFill').style.width = hpP + '%';
+  document.getElementById('arenaHp').textContent = Math.max(0, h.hp);
+
+  const xpP = h.xp / h.xpNeeded * 100;
+  document.getElementById('xpFill').style.width = xpP + '%';
+  document.getElementById('xpText').textContent = `${h.xp}/${h.xpNeeded}`;
+
+  // enemy bars
+  const eP = Math.max(0, G.enemyHp / G.enemy.maxHp * 100);
+  document.getElementById('arenaEnemyFill').style.width = eP + '%';
+  document.getElementById('arenaEnemyHp').textContent   = Math.max(0, G.enemyHp);
+
+  // attack button disable
+  document.getElementById('atkBtn').disabled = G.dead;
+
+  // upgrades
+  const cfg = { atk:'upgAtk', def:'upgDef', hp:'upgHp', crit:'upgCrit' };
+  const lbl = { atk:'+2 урона', def:'+1 броня', hp:'+25 HP', crit:'+5% крит' };
+  Object.keys(cfg).forEach(t => {
+    const cost = UPG_PRICE[t](G.upgrades[t]);
+    document.getElementById(cfg[t]+'Cost').textContent = '💰 '+cost;
+    document.getElementById(cfg[t]+'Stat').textContent = lbl[t];
+    document.getElementById(cfg[t]).disabled = G.gold < cost || G.dead;
+  });
+
+  updateRefUI();
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function anim(id, cls) {
+  const el = document.getElementById(id);
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), 300);
+}
+
+function showFloat(onHero, dmg, prefix) {
+  const arena = document.getElementById('arena');
+  const el    = document.createElement('div');
+  el.className = 'dmg-float';
+  el.textContent = prefix + '-' + dmg;
+  el.style.color = onHero ? '#cc3333' : '#d4943a';
+  el.style.left  = onHero ? '18%' : '62%';
+  el.style.top   = '25%';
+  arena.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+function addLog(msg, cls) {
+  const log = document.getElementById('battleLog');
+  const el  = document.createElement('div');
+  el.className = cls;
+  el.textContent = msg;
+  log.appendChild(el);
+  while (log.children.length > 60) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+function flashLvl() {
+  const el = document.getElementById('lvlFlash');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 700);
+}
+
+function flashBoss() {
+  const el = document.getElementById('bossFlash');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 800);
+}
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+function openTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const idx = { battle:0, hero:1, dungeon:2, leaders:3 };
+  document.querySelectorAll('.tab-btn')[idx[id]].classList.add('active');
+  if (id === 'leaders') renderLeaderboard();
+}
+
+// ══════════════════════════════════════════
+//  SAVE / LOAD
+// ══════════════════════════════════════════
+function save() {
+  try { localStorage.setItem('dng2', JSON.stringify({ ...G, lastSeen: Date.now() })); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('dng2');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    // offline gold
+    if (s.lastSeen && s.invited >= 3) {
+      const secs = Math.floor((Date.now() - s.lastSeen) / 1000);
+      if (secs > 5) {
+        const fl = FLOORS[s.floor || 0];
+        const earned = Math.floor(secs * 0.4 * fl.goldMod);
+        s.gold += earned;
+        setTimeout(() => addLog(`⏰ Ты отсутствовал ${secs}с! Герой заработал +${earned} золота`, "log-loot"), 500);
+      }
+    }
+    Object.assign(G, s);
+  } catch(e) {}
+}
+
+setInterval(() => { try { save(); } catch(e){} }, 8000);
+
+init();
+</script>
+</body>
+</html>
